@@ -27,7 +27,7 @@ from google.oauth2.service_account import Credentials
 # ──────────────────────────────────────────────────────────────
 BUK_BASE          = "https://api.bemmbo.com/v1"
 HISTORICAL_FROM   = "2025-01-01"
-DRIVE_FOLDER_ID   = "1h8lS7xFVMwciI2fOHQXIuhMMNF075dDo"
+DRIVE_FOLDER_ID   = "0AJUk5QWCegyXUk9PVA"
 PAGE_SIZE         = 500
 IDLEAL_KEY        = "I-DEAL"
 
@@ -331,6 +331,8 @@ def upload_to_drive(local_path: str, file_name: str):
         .list(
             q=f"name='{file_name}' and '{DRIVE_FOLDER_ID}' in parents and trashed=false",
             fields="files(id,name)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True,
         )
         .execute()
         .get("files", [])
@@ -338,11 +340,15 @@ def upload_to_drive(local_path: str, file_name: str):
 
     media = MediaFileUpload(local_path, mimetype=mime, resumable=True)
     if existing:
-        service.files().update(fileId=existing[0]["id"], media_body=media).execute()
+        service.files().update(
+            fileId=existing[0]["id"], media_body=media, supportsAllDrives=True,
+        ).execute()
         log.info(f"Drive: archivo actualizado → {file_name}")
     else:
         meta = {"name": file_name, "parents": [DRIVE_FOLDER_ID]}
-        service.files().create(body=meta, media_body=media, fields="id").execute()
+        service.files().create(
+            body=meta, media_body=media, fields="id", supportsAllDrives=True,
+        ).execute()
         log.info(f"Drive: archivo creado → {file_name}")
 
 

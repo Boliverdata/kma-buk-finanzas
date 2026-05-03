@@ -57,7 +57,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-DRIVE_FOLDER_ID = "1h8lS7xFVMwciI2fOHQXIuhMMNF075dDo"
+DRIVE_FOLDER_ID = "0AJUk5QWCegyXUk9PVA"
 LOCAL_FOLDER    = Path(__file__).parent
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -82,6 +82,8 @@ def _latest_from_drive(service):
             orderBy="name desc",
             pageSize=1,
             fields="files(id, name)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True,
         )
         .execute()
         .get("files", [])
