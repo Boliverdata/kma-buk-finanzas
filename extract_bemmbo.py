@@ -307,9 +307,16 @@ def extract_company(empresa: str, token: str, include_ingresos: bool = False) ->
 # Google Drive
 # ──────────────────────────────────────────────────────────────
 def get_drive_service():
-    creds_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+    raw = os.environ.get("GOOGLE_CREDENTIALS")
+    if not raw:
+        # Buscar el JSON de service account junto al script
+        matches = list(Path(__file__).parent.glob("master-chess-*.json"))
+        if matches:
+            raw = matches[0].read_text()
+    if not raw:
+        raise EnvironmentError("No se encontraron credenciales de Google.")
     creds = Credentials.from_service_account_info(
-        creds_info,
+        json.loads(raw),
         scopes=["https://www.googleapis.com/auth/drive"],
     )
     return build("drive", "v3", credentials=creds, cache_discovery=False)
@@ -411,10 +418,10 @@ def main():
 
     today      = date.today().strftime("%Y%m%d")
     file_name  = f"{today}_Consolidado_Buk_Finanzas.xlsx"
-    local_path = f"/tmp/{file_name}"
+    local_path = Path(__file__).parent / file_name
 
-    save_excel(df, local_path)
-    upload_to_drive(local_path, file_name)
+    save_excel(df, str(local_path))
+    upload_to_drive(str(local_path), file_name)
     log.info("✓ Proceso completado.")
 
 
