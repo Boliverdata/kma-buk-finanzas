@@ -1,0 +1,33 @@
+name: Extracción Diaria Buk Finanzas
+
+on:
+  schedule:
+    - cron: '0 11 * * 1-5'   # Lunes a Viernes 7:00am Chile (UTC-4)
+  workflow_dispatch:           # Permite disparo manual desde GitHub
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar extracción y notificaciones
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          COMPANY_TOKENS:     ${{ secrets.COMPANY_TOKENS }}
+          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          NOTIFY_EMAIL:       ${{ secrets.NOTIFY_EMAIL }}
+        run: python extract_bemmbo.py

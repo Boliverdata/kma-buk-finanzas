@@ -428,6 +428,13 @@ def main():
 
     save_excel(df, str(local_path))
     upload_to_drive(str(local_path), file_name)
+
+    try:
+        import notify
+        notify.run_checks(df)
+    except Exception as exc:
+        log.warning(f"Notificaciones: {exc}")
+
     log.info("✓ Proceso completado.")
 
 
