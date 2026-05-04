@@ -245,10 +245,31 @@ def normalize_invoice(inv: dict, empresa: str, tipo_flujo: str) -> dict:
 
     categoria = extract_categoria(inv) if tipo_flujo == "EGRESO" else ""
 
+    # Centro de costo — solo relevante para IEF
+    centro_costo = ""
+    if tipo_flujo == "EGRESO":
+        for entry in inv.get("accountingEntries") or []:
+            if isinstance(entry, dict):
+                cc = entry.get("costCenter") or entry.get("cost_center") or {}
+                name = cc.get("name") if isinstance(cc, dict) else str(cc) if cc else ""
+                if name:
+                    centro_costo = str(name)
+                    break
+        if not centro_costo:
+            raw_cc = inv.get("costCenters") or inv.get("costCenter") or []
+            if isinstance(raw_cc, list) and raw_cc:
+                first = raw_cc[0]
+                centro_costo = first.get("name", "") if isinstance(first, dict) else str(first)
+            elif isinstance(raw_cc, dict):
+                centro_costo = raw_cc.get("name", "")
+            elif isinstance(raw_cc, str):
+                centro_costo = raw_cc
+
     return {
         "empresa":               empresa,
         "tipo_flujo":            tipo_flujo,
         "categoria":             categoria,
+        "centro_costo":          centro_costo,
         "rut_contraparte":       rut,
         "nombre_contraparte":    nombre,
         "fecha_emision":         fecha_emision,
