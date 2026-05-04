@@ -402,15 +402,19 @@ def _build_diagnostic_html(df: pd.DataFrame) -> str:
       </div>
     </div>"""
 
+    SII_LABELS = {
+        "INVOICE":        "Facturas Afectas",
+        "EXEMPT_INVOICE": "Facturas Exentas",
+        "FEE_INVOICE":    "Boletas Honorario",
+    }
     sii_rows = ""
-    for tipo, abrev in [("INVOICE","Fact_Af"),("EXEMPT_INVOICE","Fact_Ex"),("FEE_INVOICE","BH")]:
+    for tipo, label in SII_LABELS.items():
         sub  = activos[activos["tipo_documento"] == tipo]
         pend = sub[sub["estado"].isin(PENDING_STATUSES)]
         sc   = sub[sub["categoria"].fillna("").str.strip() == ""]
         alerta = ' <span style="color:#c00;font-weight:bold">⚠</span>' if (len(sc) > 0 or len(pend) > 0) else ""
         sii_rows += f"""<tr>
-          <td style="padding:7px 10px;border-bottom:1px solid #e0e8ff;font-weight:bold">{abrev}{alerta}</td>
-          <td style="padding:7px 10px;border-bottom:1px solid #e0e8ff;color:#666;font-size:12px">{tipo.replace('_',' ').title()}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #e0e8ff;font-weight:bold">{label}{alerta}</td>
           <td style="padding:7px 10px;border-bottom:1px solid #e0e8ff;text-align:center">{len(sub):,}</td>
           <td style="padding:7px 10px;border-bottom:1px solid #e0e8ff;text-align:right">{_mm(sub['monto_bruto'].sum())}</td>
           <td style="padding:7px 10px;border-bottom:1px solid #e0e8ff;text-align:center;color:{'#E65100' if len(pend)>0 else '#2E7D32'};font-weight:bold">{len(pend)}</td>
@@ -418,14 +422,15 @@ def _build_diagnostic_html(df: pd.DataFrame) -> str:
         </tr>"""
     sii_section = f"""
     <h3 style="color:#1F4E79;margin-top:28px;border-bottom:2px solid #1F4E79;padding-bottom:6px">
-      📄 Documentos SII — Control prioritario
+      📄 Documentos SII
     </h3>
-    <p style="color:#666;font-size:12px;margin-top:-6px">Fact_Af · Fact_Ex · BH son los documentos que generan obligaciones reales desde el SII. Una factura no rechazada a tiempo puede volverse exigible.</p>
     <table width="100%" cellspacing="0" style="border-collapse:collapse;font-size:13px;background:#f5f8ff;border:1px solid #c5d5f5">
       <tr style="background:#1F4E79;color:#fff">
-        <th style="padding:8px 10px;text-align:left">Tipo</th><th style="padding:8px 10px;text-align:left">Descripción</th>
-        <th style="padding:8px 10px;text-align:center">Facturas</th><th style="padding:8px 10px;text-align:right">Monto</th>
-        <th style="padding:8px 10px;text-align:center">Pendientes</th><th style="padding:8px 10px;text-align:center">Sin cat.</th>
+        <th style="padding:8px 10px;text-align:left">Tipo</th>
+        <th style="padding:8px 10px;text-align:center">Facturas</th>
+        <th style="padding:8px 10px;text-align:right">Monto</th>
+        <th style="padding:8px 10px;text-align:center">Pendientes</th>
+        <th style="padding:8px 10px;text-align:center">Sin cat.</th>
       </tr>{sii_rows}
     </table>"""
 
