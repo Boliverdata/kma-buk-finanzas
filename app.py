@@ -23,21 +23,28 @@ st.set_page_config(
 # ─────────────────────────────────────────────────────────────────────────────
 ALLOWED_DOMAIN = "kma-asset.cl"
 
-if not st.experimental_user.is_logged_in:
+# Compatible con Streamlit >= 1.40 (experimental) y >= 1.44 (st.user)
+_user = getattr(st, "user", None) or getattr(st, "experimental_user", None)
+_is_logged_in = getattr(_user, "is_logged_in", None)
+
+if _is_logged_in is False:
     st.markdown("<br><br>", unsafe_allow_html=True)
     col = st.columns([1, 1.2, 1])[1]
     with col:
         st.markdown("### KMA Asset Management")
         st.markdown("#### Buk Finanzas")
         st.markdown("<br>", unsafe_allow_html=True)
-        st.button("Ingresar con Google", on_click=st.login, args=("google",), use_container_width=True)
+        if st.button("Ingresar con Google", use_container_width=True):
+            st.login("google")
     st.stop()
 
-user_email = st.experimental_user.email or ""
-if not user_email.lower().endswith(f"@{ALLOWED_DOMAIN}"):
-    st.error(f"Acceso restringido a usuarios @{ALLOWED_DOMAIN}.")
-    st.button("Cerrar sesión", on_click=st.logout)
-    st.stop()
+if _is_logged_in is True:
+    user_email = getattr(_user, "email", "") or ""
+    if not user_email.lower().endswith(f"@{ALLOWED_DOMAIN}"):
+        st.error(f"Acceso restringido a usuarios @{ALLOWED_DOMAIN}.")
+        if st.button("Cerrar sesión"):
+            st.logout()
+        st.stop()
 
 st.markdown("""
 <style>
