@@ -19,32 +19,28 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Autenticación — Google OAuth, solo dominio @kma-asset.cl
+# Autenticación — contraseña compartida
 # ─────────────────────────────────────────────────────────────────────────────
-ALLOWED_DOMAIN = "kma-asset.cl"
+_APP_PASSWORD = st.secrets.get("APP_PASSWORD", "")
 
-# Compatible con Streamlit >= 1.40 (experimental) y >= 1.44 (st.user)
-_user = getattr(st, "user", None) or getattr(st, "experimental_user", None)
-_is_logged_in = getattr(_user, "is_logged_in", None)
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
-if _is_logged_in is False:
+if not st.session_state.authenticated:
     st.markdown("<br><br>", unsafe_allow_html=True)
     col = st.columns([1, 1.2, 1])[1]
     with col:
         st.markdown("### KMA Asset Management")
         st.markdown("#### Buk Finanzas")
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Ingresar con Google", use_container_width=True):
-            st.login("google")
+        pwd = st.text_input("Contraseña", type="password", placeholder="Ingresa la contraseña")
+        if st.button("Ingresar", use_container_width=True):
+            if pwd == _APP_PASSWORD:
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("Contraseña incorrecta.")
     st.stop()
-
-if _is_logged_in is True:
-    user_email = getattr(_user, "email", "") or ""
-    if not user_email.lower().endswith(f"@{ALLOWED_DOMAIN}"):
-        st.error(f"Acceso restringido a usuarios @{ALLOWED_DOMAIN}.")
-        if st.button("Cerrar sesión"):
-            st.logout()
-        st.stop()
 
 st.markdown("""
 <style>
