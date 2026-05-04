@@ -18,6 +18,27 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Autenticación
+# ─────────────────────────────────────────────────────────────────────────────
+APP_PASSWORD = st.secrets.get("APP_PASSWORD") or os.environ.get("APP_PASSWORD", "")
+
+if APP_PASSWORD:
+    if not st.session_state.get("authenticated"):
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        col = st.columns([1, 1.2, 1])[1]
+        with col:
+            st.markdown("### KMA Asset Management")
+            st.markdown("#### Buk Finanzas")
+            pwd = st.text_input("Contraseña", type="password", placeholder="Ingresa la contraseña")
+            if st.button("Ingresar", use_container_width=True):
+                if pwd == APP_PASSWORD:
+                    st.session_state["authenticated"] = True
+                    st.rerun()
+                else:
+                    st.error("Contraseña incorrecta")
+        st.stop()
+
 st.markdown("""
 <style>
     /* Hide Streamlit chrome */
