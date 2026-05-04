@@ -19,25 +19,25 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Autenticación
+# Autenticación — Google OAuth, solo dominio @kma-asset.cl
 # ─────────────────────────────────────────────────────────────────────────────
-APP_PASSWORD = st.secrets.get("APP_PASSWORD") or os.environ.get("APP_PASSWORD", "")
+ALLOWED_DOMAIN = "kma-asset.cl"
 
-if APP_PASSWORD:
-    if not st.session_state.get("authenticated"):
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        col = st.columns([1, 1.2, 1])[1]
-        with col:
-            st.markdown("### KMA Asset Management")
-            st.markdown("#### Buk Finanzas")
-            pwd = st.text_input("Contraseña", type="password", placeholder="Ingresa la contraseña")
-            if st.button("Ingresar", use_container_width=True):
-                if pwd == APP_PASSWORD:
-                    st.session_state["authenticated"] = True
-                    st.rerun()
-                else:
-                    st.error("Contraseña incorrecta")
-        st.stop()
+if not st.experimental_user.is_logged_in:
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    col = st.columns([1, 1.2, 1])[1]
+    with col:
+        st.markdown("### KMA Asset Management")
+        st.markdown("#### Buk Finanzas")
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.button("Ingresar con Google", on_click=st.login, args=("google",), use_container_width=True)
+    st.stop()
+
+user_email = st.experimental_user.email or ""
+if not user_email.lower().endswith(f"@{ALLOWED_DOMAIN}"):
+    st.error(f"Acceso restringido a usuarios @{ALLOWED_DOMAIN}.")
+    st.button("Cerrar sesión", on_click=st.logout)
+    st.stop()
 
 st.markdown("""
 <style>
