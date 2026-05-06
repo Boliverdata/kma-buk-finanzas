@@ -9,6 +9,8 @@ import streamlit as st
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 
+import chat_engine
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Page config
 # ─────────────────────────────────────────────────────────────────────────────
@@ -246,7 +248,7 @@ PLOT_LAYOUT = dict(
                 font=dict(size=11)),
 )
 
-tab_res, tab_datos = st.tabs(["Resumen", "Datos"])
+tab_res, tab_datos, tab_chat = st.tabs(["Resumen", "Datos", "Chat"])
 
 # ── TAB RESUMEN ──────────────────────────────────────────────────────────────
 with tab_res:
@@ -390,3 +392,31 @@ with tab_datos:
             "fecha_agendamiento":    st.column_config.DateColumn("Fecha Agend.",      format="DD-MM-YYYY"),
         },
     )
+
+
+# ── TAB CHAT ─────────────────────────────────────────────────────────────────
+with tab_chat:
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    col_info, col_btn = st.columns([5, 1])
+    col_info.caption(
+        f"Consultando {len(df):,} registros con los filtros actuales · "
+        "No se envían RUTs ni N° de documento al modelo."
+    )
+    if col_btn.button("Limpiar", use_container_width=True):
+        st.session_state.chat_history = []
+        st.rerun()
+
+    for msg in st.session_state.chat_history:
+        st.chat_message(msg["role"]).markdown(msg["content"])
+
+    prompt = st.chat_input("Pregunta sobre tus datos financieros...")
+    if prompt:
+        st.session_state.chat_history.append({"role": "user", "content": prompt})
+        st.chat_message("user").markdown(prompt)
+        with st.chat_message("assistant"):
+            with st.spinner("Consultando Gemini..."):
+                reply = chat_engine.ask(prompt, df, st.session_state.chat_history[:-1])
+            st.markdown(reply)
+        st.session_state.chat_history.append({"role": "assistant", "content": reply})
