@@ -27,9 +27,9 @@ from google.oauth2.service_account import Credentials
 # ──────────────────────────────────────────────────────────────
 BUK_BASE          = "https://api.bemmbo.com/v1"
 HISTORICAL_FROM   = "2025-01-01"
-DRIVE_FOLDER_ID   = "0AJUk5QWCegyXUk9PVA"
+DRIVE_FOLDER_ID   = os.environ.get("DRIVE_FOLDER_ID", "")
 PAGE_SIZE         = 500
-IDLEAL_KEY        = "I-DEAL"
+IDLEAL_KEY        = os.environ.get("IDLEAL_KEY", "")
 
 TOKENS_XLSX       = Path(__file__).parent / "Token Buk.xlsx"
 

@@ -83,7 +83,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-DRIVE_FOLDER_ID = "0AJUk5QWCegyXUk9PVA"
+DRIVE_FOLDER_ID = st.secrets.get("DRIVE_FOLDER_ID", "")
 LOCAL_FOLDER    = Path(__file__).parent
 
 # ─────────────────────────────────────────────────────────────────────────────
